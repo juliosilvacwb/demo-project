@@ -7,6 +7,8 @@ import { getServerSidePrismaClient } from "./db.server";
 import { z } from "zod";
 
 import { configService } from "./config.server";
+import * as argon2 from "argon2";
+
 
 /**
  * Signs a user ID to create a tamper-proof session token
@@ -73,7 +75,8 @@ export const getUserServerFn = createServerFn().handler(async () => {
  * Signs in a user with email and password
  */
 export const signInServerFn = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ email: z.string().email(), password: z.string() }))
+  .inputValidator(z.object({ email: z.email(), password: z.string() }))
+
   .handler(async ({ data }: { data: { email: string; password: string } }) => {
     const { email, password } = data;
 
@@ -99,23 +102,29 @@ export const createAccountServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data }: { data: { email: string; name: string; password: string } }) => {
     const { email, name, password } = data;
 
-    const prisma = await getServerSidePrismaClient();
+    try {
+      const prisma = await getServerSidePrismaClient();
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+      });
 
-    if (existingUser) {
-      return { success: false as const, error: "An account with this email already exists" };
+      if (existingUser) {
+        return { success: false as const, error: "An account with this email already exists" };
+      }
+
+      const hashedPassword = await argon2.hash(password);
+      const user = await prisma.user.create({
+        data: { email, name, password: hashedPassword },
+      });
+
+      setSessionCookie(user.id);
+
+      return { success: true as const };
+    } catch (error: any) {
+      console.error(`[Auth] Error creating account: ${error.message}`, error.stack);
+      return { success: false as const, error: "An error occurred during account creation" };
     }
-
-    const user = await prisma.user.create({
-      data: { email, name, password },
-    });
-
-    setSessionCookie(user.id);
-
-    return { success: true as const };
   });
 
 /**
