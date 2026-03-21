@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "generate": "prisma generate",
     "test": "playwright test",
-    "test:ui": "playwright test --ui"
+    "test:ui": "playwright test --ui",
+    "test:unit": "vitest run",
+    "test:all": "bun run test:unit && bun run test"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.9.0",
