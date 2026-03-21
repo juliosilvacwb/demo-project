@@ -6,14 +6,14 @@ import { sessionCookieName } from "./auth.consts";
 import { getServerSidePrismaClient } from "./db.server";
 import { z } from "zod";
 
-// In production, use a proper secret from environment variables
-const COOKIE_SECRET = process.env.COOKIE_SECRET || "dev-secret-change-in-production";
+import { configService } from "./config.server";
 
 /**
  * Signs a user ID to create a tamper-proof session token
  */
 function signUserId(userId: string): string {
-  const signature = crypto.createHmac("sha256", COOKIE_SECRET).update(userId).digest("hex");
+  const secret = configService.getAppConfig().sessionSecret;
+  const signature = crypto.createHmac("sha256", secret).update(userId).digest("hex");
   return `${userId}.${signature}`;
 }
 
@@ -24,7 +24,8 @@ function verifySessionToken(token: string): string | null {
   const [userId, signature] = token.split(".");
   if (!userId || !signature) return null;
 
-  const expectedSignature = crypto.createHmac("sha256", COOKIE_SECRET).update(userId).digest("hex");
+  const secret = configService.getAppConfig().sessionSecret;
+  const expectedSignature = crypto.createHmac("sha256", secret).update(userId).digest("hex");
   if (signature !== expectedSignature) return null;
 
   return userId;
