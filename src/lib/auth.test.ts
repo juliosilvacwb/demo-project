@@ -1,4 +1,4 @@
-import { expect, it, describe, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAccountServerFn } from './auth.server';
 import * as db from './db.server';
 
@@ -102,5 +102,92 @@ describe('auth.server - createAccountServerFn', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('An account with this email already exists');
+  });
+});
+
+describe('auth.server - signInServerFn', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should sign in successfully with correct password', async () => {
+    const { signInServerFn } = await import('./auth.server');
+    const argon2 = await import('argon2');
+
+    const mockPrisma = {
+      user: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'user-id',
+          email: 'test@example.com',
+          password: '$argon2id$hashed-password',
+        }),
+      },
+    };
+    (db.getServerSidePrismaClient as any).mockResolvedValue(mockPrisma);
+    (argon2.verify as any).mockResolvedValue(true);
+
+    const input = {
+      data: {
+        email: 'test@example.com',
+        password: 'Password123!',
+      },
+    };
+
+    const result = await (signInServerFn as any).handler(input);
+
+    expect(result.success).toBe(true);
+    expect(argon2.verify).toHaveBeenCalledWith('$argon2id$hashed-password', 'Password123!');
+  });
+
+  it('should fail with incorrect password', async () => {
+    const { signInServerFn } = await import('./auth.server');
+    const argon2 = await import('argon2');
+
+    const mockPrisma = {
+      user: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'user-id',
+          email: 'test@example.com',
+          password: '$argon2id$hashed-password',
+        }),
+      },
+    };
+    (db.getServerSidePrismaClient as any).mockResolvedValue(mockPrisma);
+    (argon2.verify as any).mockResolvedValue(false);
+
+    const input = {
+      data: {
+        email: 'test@example.com',
+        password: 'wrong-password',
+      },
+    };
+
+    const result = await (signInServerFn as any).handler(input);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Invalid email or password');
+  });
+
+  it('should fail if user not found', async () => {
+    const { signInServerFn } = await import('./auth.server');
+
+    const mockPrisma = {
+      user: {
+        findUnique: vi.fn().mockResolvedValue(null),
+      },
+    };
+    (db.getServerSidePrismaClient as any).mockResolvedValue(mockPrisma);
+
+    const input = {
+      data: {
+        email: 'nonexistent@example.com',
+        password: 'any-password',
+      },
+    };
+
+    const result = await (signInServerFn as any).handler(input);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Invalid email or password');
   });
 });

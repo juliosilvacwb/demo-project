@@ -6,6 +6,7 @@ import { sessionCookieName } from "./auth.consts";
 import { getServerSidePrismaClient } from "./db.server";
 import { z } from "zod";
 
+
 import { configService } from "./config.server";
 import * as argon2 from "argon2";
 
@@ -85,7 +86,8 @@ export const signInServerFn = createServerFn({ method: "POST" })
       where: { email },
     });
 
-    if (!user || user.password !== password) {
+    const isPasswordValid = user && (await argon2.verify(user.password, password));
+    if (!user || !isPasswordValid) {
       return { success: false as const, error: "Invalid email or password" };
     }
 
