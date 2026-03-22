@@ -38,3 +38,20 @@ export const getBodyWeightsFn = createServerFn({ method: "GET" })
 
     return records;
   });
+
+export const getLatestBodyWeightFn = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }: { context: { user: { id: string } } }) => {
+    const prisma = await getServerSidePrismaClient();
+
+    const latest = await prisma.bodyWeight.findFirst({
+      where: {
+        userId: context.user.id,
+      },
+      orderBy: {
+        measuredAt: "desc",
+      },
+    });
+
+    return latest;
+  });

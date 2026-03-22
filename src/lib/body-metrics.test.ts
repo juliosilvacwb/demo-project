@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { addBodyWeightFn, BodyWeightSchema, getBodyWeightsFn } from './body-metrics.server';
+import { addBodyWeightFn, BodyWeightSchema, getBodyWeightsFn, getLatestBodyWeightFn } from './body-metrics.server';
 import * as db from './db.server';
 
 vi.mock('./db.server', () => ({
@@ -107,6 +107,47 @@ describe('body-metrics.server', () => {
         where: { userId: 'user-1' },
         orderBy: { measuredAt: 'desc' },
       });
+    });
+  });
+
+  describe('getLatestBodyWeightFn', () => {
+    it('should return the latest body weight entry', async () => {
+      const mockEntry = { id: '2', weight: 181, measuredAt: new Date('2024-03-22') };
+      const mockPrisma = {
+        bodyWeight: {
+          findFirst: vi.fn().mockResolvedValue(mockEntry),
+        },
+      };
+      (db.getServerSidePrismaClient as any).mockResolvedValue(mockPrisma);
+
+      const input = {
+        context: { user: { id: 'user-1' } },
+      };
+
+      const result = await (getLatestBodyWeightFn as any).handler(input);
+
+      expect(result).toEqual(mockEntry);
+      expect(mockPrisma.bodyWeight.findFirst).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        orderBy: { measuredAt: 'desc' },
+      });
+    });
+
+    it('should return null if no entries exist', async () => {
+      const mockPrisma = {
+        bodyWeight: {
+          findFirst: vi.fn().mockResolvedValue(null),
+        },
+      };
+      (db.getServerSidePrismaClient as any).mockResolvedValue(mockPrisma);
+
+      const input = {
+        context: { user: { id: 'user-1' } },
+      };
+
+      const result = await (getLatestBodyWeightFn as any).handler(input);
+
+      expect(result).toBeNull();
     });
   });
 });
