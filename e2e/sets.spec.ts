@@ -96,10 +96,9 @@ test.describe("Sets", () => {
       await page.fill('input[placeholder="Reps"]', set2.reps);
       await page.click('button:has-text("Add")');
 
-      const setList = page.locator('ul li');
-
       await expect(page.locator('ul li')).toHaveCount(2);
       
+      const setList = page.locator('ul li');
       const firstSet = setList.nth(0);
       const secondSet = setList.nth(1);
 
