@@ -69,10 +69,10 @@ describe('movements.server', () => {
   });
 
   describe('getMovementsServerFn', () => {
-    it('should return all movements ordered by name', async () => {
+    it('should return movements that are not archived ordered by name', async () => {
       const mockMovements = [
-        { id: '1', name: 'Bench Press', isBodyWeight: false },
-        { id: '2', name: 'Squats', isBodyWeight: false },
+        { id: '1', name: 'Bench Press', isBodyWeight: false, isArchived: false },
+        { id: '2', name: 'Squats', isBodyWeight: false, isArchived: false },
       ];
       const mockPrisma = {
         movement: {
@@ -85,6 +85,7 @@ describe('movements.server', () => {
 
       expect(result).toEqual(mockMovements);
       expect(mockPrisma.movement.findMany).toHaveBeenCalledWith({
+        where: { isArchived: false },
         orderBy: { name: 'asc' },
       });
     });
