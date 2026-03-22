@@ -3,9 +3,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { deleteWorkoutsServerFn } from "@/lib/workouts.server";
-import { Trash2 } from "lucide-react";
+import { Trash2, TrendingUp, Activity, Weight } from "lucide-react";
 import { workoutHistoryQueryOptions } from "./-queries/workout-history";
-import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSuspenseQuery, useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { Select } from "@/components/ui/select";
+import { WorkoutProgressionChart, MetricType, ProgressionStats } from "@/components/WorkoutProgressionChart";
+import { movementStatsQueryOptions } from "./-queries/stats";
+import { useMemo, useEffect } from "react";
 
 export const Route = createFileRoute("/__index/_layout/workout-history/")({
   loader: async ({ context }) => {
@@ -18,6 +22,8 @@ function WorkoutHistoryPage() {
   const queryClient = useQueryClient();
   const { data: workouts } = useSuspenseQuery(workoutHistoryQueryOptions());
   const [selectedWorkouts, setSelectedWorkouts] = useState<Set<string>>(new Set());
+  const [selectedMovementId, setSelectedMovementId] = useState<string>("");
+  const [selectedMetric, setSelectedMetric] = useState<MetricType>("maxWeight");
 
   const deleteWorkoutsMutation = useMutation({
     mutationFn: (workoutIds: string[]) => deleteWorkoutsServerFn({ data: { workoutIds } }),
@@ -27,10 +33,19 @@ function WorkoutHistoryPage() {
     },
   });
 
-  // Get all unique movements across all workouts
-  const uniqueMovements = Array.from(
-    new Map(workouts.flatMap((w) => w.sets.map((s) => [s.movement.id, s.movement.name]))).entries(),
-  ).sort((a, b) => a[1].localeCompare(b[1]));
+  const uniqueMovements = useMemo(() => {
+    return Array.from(
+      new Map(workouts.flatMap((w) => w.sets.map((s) => [s.movement.id, s.movement.name]))).entries(),
+    ).sort((a, b) => a[1].localeCompare(b[1]));
+  }, [workouts]);
+
+  useEffect(() => {
+    if (!selectedMovementId && uniqueMovements.length > 0) {
+      setSelectedMovementId(uniqueMovements[0][0]);
+    }
+  }, [uniqueMovements, selectedMovementId]);
+
+  const { data: stats, isLoading: statsLoading } = useQuery(movementStatsQueryOptions(selectedMovementId));
 
   const toggleWorkout = (id: string) => {
     setSelectedWorkouts((prev) => {
@@ -62,6 +77,67 @@ function WorkoutHistoryPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-slate-900">Workout History</h1>
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <CardTitle>Progression Visualizer</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              className="w-[200px]"
+              value={selectedMovementId}
+              onChange={(e) => setSelectedMovementId(e.target.value)}
+              disabled={uniqueMovements.length === 0}>
+              {uniqueMovements.length === 0 && <option value="">No movements found</option>}
+              {uniqueMovements.map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </Select>
+
+            <div className="flex items-center bg-slate-100 p-1 rounded-lg">
+              <button
+                onClick={() => setSelectedMetric("maxWeight")}
+                className={`p-1.5 rounded-md transition-all ${
+                  selectedMetric === "maxWeight" ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"
+                }`}
+                title="Max Weight">
+                <Weight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setSelectedMetric("totalReps")}
+                className={`p-1.5 rounded-md transition-all ${
+                  selectedMetric === "totalReps" ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"
+                }`}
+                title="Total Reps">
+                <Activity className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setSelectedMetric("totalVolume")}
+                className={`p-1.5 rounded-md transition-all ${
+                  selectedMetric === "totalVolume" ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"
+                }`}
+                title="Total Volume">
+                <TrendingUp className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[350px] w-full">
+            {statsLoading ? (
+              <div className="h-full flex items-center justify-center text-slate-400 animate-pulse">
+                Loading progression data...
+              </div>
+            ) : (
+              <WorkoutProgressionChart
+                data={(stats as ProgressionStats[]) || []}
+                metric={selectedMetric}
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
