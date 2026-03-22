@@ -32,12 +32,17 @@ function CurrentWorkoutPage() {
   const handleMovementChange = (movementId: string) => {
     setSelectedMovement(movementId);
 
-    if (!movementId) return;
+    if (!movementId) {
+      setWeight("");
+      return;
+    };
 
     const movement = movements.find((m) => m.id === movementId);
     if (movement?.isBodyWeight && latestBodyWeight?.weight !== undefined) {
       const roundedWeight = Math.round(latestBodyWeight.weight);
       setWeight(roundedWeight.toString());
+    } else {
+      setWeight("");
     }
   };
 
