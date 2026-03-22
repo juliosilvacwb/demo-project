@@ -73,75 +73,14 @@ function WorkoutHistoryPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="h-[calc(100vh-3rem)] flex flex-col gap-4">
+      <div className="flex-none">
         <h1 className="text-2xl font-semibold text-slate-900">Workout History</h1>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <CardTitle>Progression Visualizer</CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            <Select
-              className="w-[200px]"
-              value={selectedMovementId}
-              onChange={(e) => setSelectedMovementId(e.target.value)}
-              disabled={uniqueMovements.length === 0}>
-              {uniqueMovements.length === 0 && <option value="">No movements found</option>}
-              {uniqueMovements.map(([id, name]) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </Select>
-
-            <div className="flex items-center bg-slate-100 p-1 rounded-lg">
-              <button
-                onClick={() => setSelectedMetric("maxWeight")}
-                className={`p-1.5 rounded-md transition-all ${
-                  selectedMetric === "maxWeight" ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"
-                }`}
-                title="Max Weight">
-                <Weight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setSelectedMetric("totalReps")}
-                className={`p-1.5 rounded-md transition-all ${
-                  selectedMetric === "totalReps" ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"
-                }`}
-                title="Total Reps">
-                <Activity className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setSelectedMetric("totalVolume")}
-                className={`p-1.5 rounded-md transition-all ${
-                  selectedMetric === "totalVolume" ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"
-                }`}
-                title="Total Volume">
-                <TrendingUp className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[350px] w-full">
-            {statsLoading ? (
-              <div className="h-full flex items-center justify-center text-slate-400 animate-pulse">
-                Loading progression data...
-              </div>
-            ) : (
-              <WorkoutProgressionChart
-                data={(stats as ProgressionStats[]) || []}
-                metric={selectedMetric}
-              />
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Completed Workouts</CardTitle>
+      <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <CardHeader className="flex-none flex flex-row items-center justify-between border-b bg-slate-50/50 py-4">
+          <CardTitle className="text-lg">Completed Workouts</CardTitle>
           <Button
             size="sm"
             variant="destructive"
@@ -151,11 +90,11 @@ function WorkoutHistoryPage() {
             {deleteWorkoutsMutation.isPending ? "Deleting..." : `Delete Selected (${selectedWorkouts.size})`}
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 overflow-auto min-h-0 p-0">
           {workouts.length === 0 ? (
-            <p className="text-sm text-slate-500">No completed workouts yet.</p>
+            <p className="text-sm text-slate-500 p-6">No completed workouts yet.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="w-full h-full">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200">
@@ -236,6 +175,68 @@ function WorkoutHistoryPage() {
           )}
         </CardContent>
       </Card>
+
+      <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <CardHeader className="flex-none flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b bg-slate-50/50 py-4">
+          <CardTitle className="text-lg">Progression Visualizer</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              className="w-[200px]"
+              value={selectedMovementId}
+              onChange={(e) => setSelectedMovementId(e.target.value)}
+              disabled={uniqueMovements.length === 0}>
+              {uniqueMovements.length === 0 && <option value="">No movements found</option>}
+              {uniqueMovements.map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </Select>
+
+            <div className="flex items-center bg-slate-100 p-1 rounded-lg">
+              <button
+                onClick={() => setSelectedMetric("maxWeight")}
+                className={`p-1.5 rounded-md transition-all ${
+                  selectedMetric === "maxWeight" ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"
+                }`}
+                title="Max Weight">
+                <Weight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setSelectedMetric("totalReps")}
+                className={`p-1.5 rounded-md transition-all ${
+                  selectedMetric === "totalReps" ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"
+                }`}
+                title="Total Reps">
+                <Activity className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setSelectedMetric("totalVolume")}
+                className={`p-1.5 rounded-md transition-all ${
+                  selectedMetric === "totalVolume" ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"
+                }`}
+                title="Total Volume">
+                <TrendingUp className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="flex-1 min-h-0 overflow-hidden flex flex-col p-6">
+          <div className="flex-1 min-h-0 w-full">
+            {statsLoading ? (
+              <div className="h-full flex items-center justify-center text-slate-400 animate-pulse">
+                Loading progression data...
+              </div>
+            ) : (
+              <WorkoutProgressionChart
+                data={(stats as ProgressionStats[]) || []}
+                metric={selectedMetric}
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }

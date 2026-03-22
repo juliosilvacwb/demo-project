@@ -20,7 +20,7 @@ const navItems = [
 function RouteComponent() {
   const { user } = Route.useRouteContext();
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="h-screen flex bg-slate-50 overflow-hidden">
       <nav className="w-64 bg-white border-r border-slate-200 p-4 flex flex-col">
         <img src="/wordmark.svg" alt="Logo" className="h-6 mb-8" />
         <div className="flex flex-col gap-1 flex-1">
@@ -50,7 +50,7 @@ function RouteComponent() {
           </a>
         </div>
       </nav>
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-auto">
         <Outlet />
       </main>
     </div>

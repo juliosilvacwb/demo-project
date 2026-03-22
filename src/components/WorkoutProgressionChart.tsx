@@ -61,7 +61,7 @@ export function WorkoutProgressionChart({ data, metric }: WorkoutProgressionChar
   }
 
   return (
-    <div className="w-full h-full min-h-[300px]">
+    <div className="w-full h-full min-h-[200px]">
       <div className="flex items-center mb-4 ml-2">
         {metricIcons[metric]}
         <span className="text-sm font-medium text-slate-700">{metricLabels[metric]}</span>
