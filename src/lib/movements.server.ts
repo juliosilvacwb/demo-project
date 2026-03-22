@@ -23,3 +23,26 @@ export const getMovementsServerFn = createServerFn().handler(async () => {
     orderBy: { name: "asc" },
   });
 });
+
+export const deleteMovementServerFn = createServerFn({ method: "POST" })
+  .inputValidator(z.string())
+  .handler(async ({ data: movementId }) => {
+    const prisma = await getServerSidePrismaClient();
+
+    const setCount = await prisma.set.count({
+      where: { movementId },
+    });
+
+    if (setCount > 0) {
+      await prisma.movement.update({
+        where: { id: movementId },
+        data: { isArchived: true },
+      });
+    } else {
+      await prisma.movement.delete({
+        where: { id: movementId },
+      });
+    }
+
+    return { success: true };
+  });

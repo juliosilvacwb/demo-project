@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMovementServerFn, getMovementsServerFn, MovementSchema } from './movements.server';
-import { z } from 'zod';
 import * as db from './db.server';
+import { createMovementServerFn, deleteMovementServerFn, getMovementsServerFn } from './movements.server';
 
 vi.mock('./db.server', () => ({
   getServerSidePrismaClient: vi.fn(),
@@ -87,6 +86,49 @@ describe('movements.server', () => {
       expect(result).toEqual(mockMovements);
       expect(mockPrisma.movement.findMany).toHaveBeenCalledWith({
         orderBy: { name: 'asc' },
+      });
+    });
+  });
+
+  describe('deleteMovementServerFn', () => {
+    it('should hard delete a movement if it has no associated sets', async () => {
+      const mockPrisma = {
+        set: {
+          count: vi.fn().mockResolvedValue(0),
+        },
+        movement: {
+          delete: vi.fn().mockResolvedValue({ id: 'mov-1' }),
+        },
+      };
+      (db.getServerSidePrismaClient as any).mockResolvedValue(mockPrisma);
+
+      const input = { data: 'mov-1' };
+      const result = await (deleteMovementServerFn as any).handler(input);
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.set.count).toHaveBeenCalledWith({ where: { movementId: 'mov-1' } });
+      expect(mockPrisma.movement.delete).toHaveBeenCalledWith({ where: { id: 'mov-1' } });
+    });
+
+    it('should soft delete (archive) a movement if it has associated sets', async () => {
+      const mockPrisma = {
+        set: {
+          count: vi.fn().mockResolvedValue(5),
+        },
+        movement: {
+          update: vi.fn().mockResolvedValue({ id: 'mov-1', isArchived: true }),
+        },
+      };
+      (db.getServerSidePrismaClient as any).mockResolvedValue(mockPrisma);
+
+      const input = { data: 'mov-1' };
+      const result = await (deleteMovementServerFn as any).handler(input);
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.set.count).toHaveBeenCalledWith({ where: { movementId: 'mov-1' } });
+      expect(mockPrisma.movement.update).toHaveBeenCalledWith({
+        where: { id: 'mov-1' },
+        data: { isArchived: true },
       });
     });
   });
