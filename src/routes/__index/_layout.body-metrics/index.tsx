@@ -50,13 +50,13 @@ function BodyMetricsPage() {
     }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="h-[calc(100vh-3rem)] flex flex-col gap-6">
+      <div className="flex-none flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-slate-900">Body Metrics</h1>
       </div>
 
       {/* Horizontal Form on Top */}
-      <Card>
+      <Card className="flex-none">
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-end gap-4">
             <div className="flex-1 space-y-2 w-full">
@@ -88,13 +88,13 @@ function BodyMetricsPage() {
       </Card>
 
       {/* Main Content Row: Chart (70%) and History (30%) */}
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-6">
         {/* Progress Chart */}
-        <Card className="flex-[7]">
+        <Card className="flex-[7] min-h-0 flex flex-col overflow-hidden">
           <CardHeader>
             <CardTitle>Progress Over Time</CardTitle>
           </CardHeader>
-          <CardContent className="h-[400px]">
+          <CardContent className="flex-1 min-h-0 p-6">
             {chartData.length < 2 ? (
               <div className="h-full flex items-center justify-center text-slate-500 text-sm italic">
                 Log at least two weight entries to see progress.
@@ -131,11 +131,11 @@ function BodyMetricsPage() {
         </Card>
 
         {/* Vertical History Sidebar */}
-        <Card className="flex-[3] flex flex-col">
+        <Card className="flex-[3] min-h-0 flex flex-col overflow-hidden">
           <CardHeader>
             <CardTitle>History</CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto max-h-[400px]">
+          <CardContent className="flex-1 overflow-y-auto min-h-0">
             {metrics.length === 0 ? (
               <p className="text-sm text-slate-500">No logs yet.</p>
             ) : (

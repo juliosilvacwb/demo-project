@@ -88,13 +88,15 @@ function CurrentWorkoutPage() {
 
   if (!workout) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Current Workout</h1>
-        <Card>
+      <div className="h-[calc(100vh-3rem)] flex flex-col gap-6">
+        <div className="flex-none">
+          <h1 className="text-2xl font-semibold text-slate-900">Current Workout</h1>
+        </div>
+        <Card className="flex-1 flex items-center justify-center">
           <CardContent className="py-12 text-center">
-            <p className="text-slate-500 mb-4">No active workout. Ready to start?</p>
-            <Button onClick={() => createWorkoutMutation.mutate()} size="lg">
-              <Play className="w-4 h-4 mr-2" />
+            <p className="text-slate-500 mb-4 text-lg">No active workout. Ready to start?</p>
+            <Button onClick={() => createWorkoutMutation.mutate()} size="lg" className="h-12 px-8">
+              <Play className="w-5 h-5 mr-2" />
               {createWorkoutMutation.isPending ? "Starting..." : "Start Workout"}
             </Button>
           </CardContent>
@@ -104,8 +106,8 @@ function CurrentWorkoutPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="h-[calc(100vh-3rem)] flex flex-col gap-4">
+      <div className="flex-none flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-slate-900">Current Workout</h1>
         <Button variant="outline" onClick={() => completeWorkoutMutation.mutate()}>
           <Check className="w-4 h-4 mr-2" />
@@ -113,9 +115,9 @@ function CurrentWorkoutPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
+      <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <CardHeader className="flex-none border-b bg-slate-50/50 py-4">
+          <CardTitle className="text-lg">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
               year: "numeric",
@@ -124,60 +126,67 @@ function CurrentWorkoutPage() {
             })}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleAddSet} className="flex gap-2 items-center">
-            <Select value={selectedMovement} onChange={(e) => handleMovementChange(e.target.value)}>
-              <option value="">Select movement</option>
-              {movements.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </Select>
-            <Input
-              type="number"
-              placeholder="Weight"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              className="w-24"
-              min={0}
-            />
-            <Input
-              type="number"
-              placeholder="Reps"
-              value={reps}
-              onChange={(e) => setReps(e.target.value)}
-              className="w-24"
-              min={1}
-            />
-            <Button type="submit" disabled={!selectedMovement || !reps || !weight} size="sm">
-              <Plus className="w-4 h-4 mr-1" />
-              {addSetMutation.isPending ? "Adding..." : "Add"}
-            </Button>
-          </form>
-          {workout.sets.length === 0 ? (
-            <p className="text-sm text-slate-500">No sets yet. Add exercises to your workout!</p>
-          ) : (
-            <ul className="space-y-2">
-              {workout.sets.map((set) => (
-                <li key={set.id} className="px-3 py-2 bg-slate-50 rounded-lg text-sm flex items-center justify-between">
-                  <div>
-                    <span className="font-medium">{set.movement.name}</span>
-                    <span className="text-slate-500 ml-2">
-                      {set.reps} reps × {set.weight} lbs
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteSetMutation.mutate(set.id)}
-                    className="h-8 w-8 text-slate-400">
-                    <X className="w-4 h-4" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
+        <CardContent className="flex-1 min-h-0 flex flex-col p-0 overflow-hidden">
+          <div className="flex-none p-6 border-b bg-slate-50/20">
+            <form onSubmit={handleAddSet} className="flex gap-2 items-center">
+              <Select value={selectedMovement} onChange={(e) => handleMovementChange(e.target.value)} className="flex-1">
+                <option value="">Select movement</option>
+                {movements.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </Select>
+              <Input
+                type="number"
+                placeholder="Weight"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                className="w-24"
+                min={0}
+              />
+              <Input
+                type="number"
+                placeholder="Reps"
+                value={reps}
+                onChange={(e) => setReps(e.target.value)}
+                className="w-24"
+                min={1}
+              />
+              <Button type="submit" disabled={!selectedMovement || !reps || !weight} size="sm">
+                <Plus className="w-4 h-4 mr-1" />
+                {addSetMutation.isPending ? "Adding..." : "Add"}
+              </Button>
+            </form>
+          </div>
+          <div className="flex-1 overflow-y-auto min-h-0 p-6">
+            {workout.sets.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 italic">
+                <p>No sets yet.</p>
+                <p className="text-sm">Add exercises to your workout above!</p>
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {workout.sets.map((set) => (
+                  <li key={set.id} className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm flex items-center justify-between hover:bg-slate-100/80 transition-colors">
+                    <div>
+                      <span className="font-semibold text-slate-900">{set.movement.name}</span>
+                      <span className="text-slate-500 ml-3">
+                        {set.reps} reps × {set.weight} lbs
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteSetMutation.mutate(set.id)}
+                      className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

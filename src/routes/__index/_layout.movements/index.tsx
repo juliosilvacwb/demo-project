@@ -38,10 +38,12 @@ function MovementsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-slate-900">Movements</h1>
+    <div className="h-[calc(100vh-3rem)] flex flex-col gap-4">
+      <div className="flex-none">
+        <h1 className="text-2xl font-semibold text-slate-900">Movements</h1>
+      </div>
 
-      <Card>
+      <Card className="flex-none">
         <CardHeader>
           <CardTitle>Add New Movement</CardTitle>
         </CardHeader>
@@ -70,19 +72,19 @@ function MovementsPage() {
           </form>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>All Movements</CardTitle>
+      <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <CardHeader className="flex-none border-b bg-slate-50/50 py-4">
+          <CardTitle className="text-lg">All Movements</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 overflow-y-auto min-h-0 p-0">
           {movements.length === 0 ? (
             <p className="text-sm text-slate-500">No movements yet. Add one above!</p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="divide-y divide-slate-100">
               {movements.map((movement) => (
                 <li
                   key={movement.id}
-                  className="px-3 py-2 bg-slate-50 rounded-lg text-sm font-medium text-slate-700 flex items-center justify-between"
+                  className="px-6 py-3 hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700 flex items-center justify-between"
                 >
                   <span className="flex items-center gap-2">
                     {movement.name}
