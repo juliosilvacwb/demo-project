@@ -26,8 +26,10 @@ function BodyMetricsPage() {
     mutationFn: (data: { weight: number; measuredAt: Date }) => addBodyWeightFn({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bodyMetricsQueryOptions().queryKey });
+      queryClient.invalidateQueries({ queryKey: ["latest-body-weight"] });
       setWeight("");
     },
+
   });
 
   const handleSubmit = (e: React.FormEvent) => {

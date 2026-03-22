@@ -4,21 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import {
-  createWorkoutServerFn,
-  completeWorkoutServerFn,
-  addSetServerFn,
-  deleteSetServerFn,
-} from "@/lib/workouts.server";
+import { createWorkoutServerFn, completeWorkoutServerFn, addSetServerFn, deleteSetServerFn, } from "@/lib/workouts.server";
 import { Play, Check, Plus, X } from "lucide-react";
 import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { currentWorkoutQueryOptions, movementsQueryOptions } from "./-queries/current-workout";
+import { currentWorkoutQueryOptions, movementsQueryOptions, latestBodyWeightQueryOptions, } from "./-queries/current-workout";
 
 export const Route = createFileRoute("/__index/_layout/current-workout/")({
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(currentWorkoutQueryOptions()),
       context.queryClient.ensureQueryData(movementsQueryOptions()),
+      context.queryClient.ensureQueryData(latestBodyWeightQueryOptions()),
     ]);
   },
   component: CurrentWorkoutPage,
@@ -28,9 +24,22 @@ function CurrentWorkoutPage() {
   const queryClient = useQueryClient();
   const { data: workout } = useSuspenseQuery(currentWorkoutQueryOptions());
   const { data: movements } = useSuspenseQuery(movementsQueryOptions());
+  const { data: latestBodyWeight } = useSuspenseQuery(latestBodyWeightQueryOptions());
   const [selectedMovement, setSelectedMovement] = useState("");
   const [reps, setReps] = useState("");
   const [weight, setWeight] = useState("");
+
+  const handleMovementChange = (movementId: string) => {
+    setSelectedMovement(movementId);
+
+    if (!movementId) return;
+
+    const movement = movements.find((m) => m.id === movementId);
+    if (movement?.isBodyWeight && latestBodyWeight?.weight !== undefined) {
+      const roundedWeight = Math.round(latestBodyWeight.weight);
+      setWeight(roundedWeight.toString());
+    }
+  };
 
   const createWorkoutMutation = useMutation({
     mutationFn: () => createWorkoutServerFn(),
@@ -112,7 +121,7 @@ function CurrentWorkoutPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleAddSet} className="flex gap-2 items-center">
-            <Select value={selectedMovement} onChange={(e) => setSelectedMovement(e.target.value)}>
+            <Select value={selectedMovement} onChange={(e) => handleMovementChange(e.target.value)}>
               <option value="">Select movement</option>
               {movements.map((m) => (
                 <option key={m.id} value={m.id}>
