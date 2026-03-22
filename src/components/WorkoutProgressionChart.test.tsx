@@ -2,14 +2,16 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { WorkoutProgressionChart } from "./WorkoutProgressionChart";
 
-vi.mock("recharts", async () => {
-  const original = await vi.importActual("recharts");
-  return {
-    ...original,
-    ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
-    LineChart: ({ children, data }: any) => <div data-testid="line-chart">{children}</div>,
-  };
-});
+// Thourough mock for Recharts to avoid internal timers and layout issues in JSDOM
+vi.mock("recharts", () => ({
+  ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
+  LineChart: ({ children, data }: any) => <div data-testid="line-chart">{children}</div>,
+  Line: () => <div />,
+  XAxis: () => <div />,
+  YAxis: () => <div />,
+  CartesianGrid: () => <div />,
+  Tooltip: () => <div />,
+}));
 
 describe("WorkoutProgressionChart", () => {
   const mockData = [
