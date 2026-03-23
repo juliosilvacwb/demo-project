@@ -1,13 +1,17 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Sets", () => {
-  const email = `test-sets-${Date.now()}@example.com`;
+  let email: string;
+  let movementName: string;
   const password = "Password123!";
   const name = "Test User";
-  const movementName = "Bench Press";
 
   test.beforeEach(async ({ page }) => {
+    email = `test-sets-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
+    movementName = `BP ${Math.random().toString(36).slice(2, 7)}`;
+
     await page.goto("/create-account");
+    await page.waitForLoadState("networkidle");
     await page.fill('input[id="name"]', name);
     await page.fill('input[id="email"]', email);
     await page.fill('input[id="password"]', password);
@@ -16,11 +20,13 @@ test.describe("Sets", () => {
     await page.waitForURL("**/current-workout");
 
     await page.goto("/movements");
+    await page.waitForLoadState("networkidle");
     await page.fill('input[placeholder="Movement name (e.g. Bench Press)"]', movementName);
     await page.click('button:has-text("Add")');
     await expect(page.locator(`li:has-text("${movementName}")`)).toBeVisible();
 
     await page.goto("/current-workout");
+    await page.waitForLoadState("networkidle");
 
     const startButton = page.locator('button:has-text("Start Workout")');
     if (await startButton.isVisible()) {
@@ -78,7 +84,7 @@ test.describe("Sets", () => {
 
       const setItem = page.locator(`li:has-text("${movementName}")`).first();
       await expect(setItem).toBeVisible();
-      await expect(setItem.locator('span.font-medium')).toHaveText(movementName);
+      await expect(setItem.locator('span.font-semibold')).toHaveText(movementName);
       await expect(setItem.locator('span.text-slate-500')).toHaveText("12 reps × 100 lbs");
     });
 

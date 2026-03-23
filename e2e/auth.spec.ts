@@ -13,6 +13,7 @@ test.describe("Authentication", () => {
 
   test("should create a new account", async ({ page }) => {
     await page.goto("/create-account");
+    await page.waitForLoadState("networkidle");
 
     await page.fill('input[id="name"]', name);
     await page.fill('input[id="email"]', email);
@@ -29,6 +30,7 @@ test.describe("Authentication", () => {
     const localEmail = `login-test-${Date.now()}@example.com`;
 
     await page.goto("/create-account");
+    await page.waitForLoadState("networkidle");
     await page.fill('input[id="name"]', name);
     await page.fill('input[id="email"]', localEmail);
     await page.fill('input[id="password"]', password);
@@ -37,6 +39,7 @@ test.describe("Authentication", () => {
 
     await page.goto("/logout");
     await page.waitForURL("**/sign-in");
+    await page.waitForLoadState("networkidle");
 
     await page.fill('input[id="email"]', localEmail);
     await page.fill('input[id="password"]', password);
@@ -48,12 +51,13 @@ test.describe("Authentication", () => {
 
   test("should show error on invalid login", async ({ page }) => {
     await page.goto("/sign-in");
+    await page.waitForLoadState("networkidle");
 
-    await page.fill('input[id="email"]', "wrong@example.com");
+    await page.fill('input[id="email"]', `wrong-${Date.now()}@example.com`);
     await page.fill('input[id="password"]', "wrongpassword");
     await page.click('button[type="submit"]');
 
-    const error = page.locator('div:has-text("Invalid email or password")');
+    const error = page.getByText("Invalid email or password");
     await expect(error).toBeVisible();
   });
 });
