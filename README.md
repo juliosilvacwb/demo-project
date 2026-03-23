@@ -6,11 +6,11 @@ A simple workout tracking app built with TanStack Start. Users can configure mov
 
 1. Add weight tracking section where a user can input their weight. This should be something they can track over time. Add a chart showing the history of that
    - **Implementation**: Built using TanStack Start’s SSR architecture and Recharts.
-   - **Why Recharts?**: We chose Recharts because it is a native React library based on declarative SVG components, allowing for performant and responsive integration with the project’s ecosystem in a single unified solution.
+   - **Why Recharts?**: I chose Recharts because it is a native React library based on declarative SVG components, allowing for performant and responsive integration with the project’s ecosystem in a single unified solution.
 
 2. The current setup doesn't support body-weight movements very well (e.g. pullups / pushups) update the "movements page" so a user can flag a movement as "body-weight" when they create it. When a "body-weight" movement is added to the current workout the weight field should default to the most recent user-inputted weight
-   - **Implementation**: Added an `isBodyWeight` flag to the `Movement` model and integrated automated weight pre-filling. We used TanStack Query's `invalidateQueries` to ensure the most recent body weight log is immediately available to the workout workout entry form.
-   - **Why TanStack Query Cache?**: We chose to leverage TanStack Query's cache system to manage cross-feature data synchronization (Body Metrics -> Current Workout). This avoids manual prop-drilling or complex global state, providing a performant, reactive experience where weight logs are instantly reflected in exercise fields.
+   - **Implementation**: Added an `isBodyWeight` flag to the `Movement` model and integrated automated weight pre-filling. I used TanStack Query's `invalidateQueries` to ensure the most recent body weight log is immediately available to the workout workout entry form.
+   - **Why TanStack Query Cache?**: I chose to leverage TanStack Query's cache system to manage cross-feature data synchronization (Body Metrics -> Current Workout). This avoids manual prop-drilling or complex global state, providing a performant, reactive experience where weight logs are instantly reflected in exercise fields.
 
 3. The Workout history should give the user a sense of progression. One way to do this is to show certain summary metrics for each movement and their progression over time. Please implement a chart where a user can select a movement and a corresponding metric and see that metric plotted against time.
    Metrics:
@@ -18,7 +18,7 @@ A simple workout tracking app built with TanStack Start. Users can configure mov
    - total reps
    - total volume (volume of a set is weight \* reps, total volume for a movement is total volume of all sets in a workout)
    - **Implementation**: Developed a server-side aggregation function `getMovementHistoryStatsServerFn` that calculates metrics (max weight, total reps, and volume) per workout date using optimized Raw SQL. This data is visualized via a custom `WorkoutProgressionChart` built with Recharts, featuring dynamic movement and metric selection.
-   - **Why Raw SQL Aggregations?**: We opted for `$queryRaw` because it's the most efficient method for calculating metrics like total volume and maximums across potentially thousands of sets. By offloading these calculations to PostgreSQL, we ensure minimal data transfer and keep the UI reactive, regardless of the size of the user's training history.
+   - **Why Raw SQL Aggregations?**: I opted for `$queryRaw` because it's the most efficient method for calculating metrics like total volume and maximums across potentially thousands of sets. By offloading these calculations to PostgreSQL, I ensured minimal data transfer and kept the UI reactive, regardless of the size of the user's training history.
 
 4. There are no tests! Please implement the e2e tests in the `e2e/` directory using Playwright. The test scaffolding is already set up - you just need to implement the test cases:
    - `e2e/movements.spec.ts` - Movement CRUD operations
