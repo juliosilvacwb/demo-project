@@ -5,5 +5,8 @@ export const getServerConfigServerFn = createServerFn().handler(async () => {
   if (!configService.isInitialized()) {
     await configService.initialize();
   }
-  return configService.getAppConfig();
+  const config = configService.getAppConfig();
+  return {
+    environment: config.environment,
+  };
 });

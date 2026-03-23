@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getServerSidePrismaClient } from "@/lib/db.server";
+import { authMiddleware } from "@/lib/auth.server";
 import { z } from "zod";
 
 export const MovementSchema = z.object({
@@ -8,6 +9,7 @@ export const MovementSchema = z.object({
 });
 
 export const createMovementServerFn = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .inputValidator(MovementSchema)
   .handler(async ({ data }: { data: z.infer<typeof MovementSchema> }) => {
     const prisma = await getServerSidePrismaClient();
@@ -17,15 +19,18 @@ export const createMovementServerFn = createServerFn({ method: "POST" })
     return { success: true, movement };
   });
 
-export const getMovementsServerFn = createServerFn().handler(async () => {
-  const prisma = await getServerSidePrismaClient();
-  return prisma.movement.findMany({
-    where: { isArchived: false },
-    orderBy: { name: "asc" },
+export const getMovementsServerFn = createServerFn()
+  .middleware([authMiddleware])
+  .handler(async () => {
+    const prisma = await getServerSidePrismaClient();
+    return prisma.movement.findMany({
+      where: { isArchived: false },
+      orderBy: { name: "asc" },
+    });
   });
-});
 
 export const deleteMovementServerFn = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .inputValidator(z.string())
   .handler(async ({ data: movementId }) => {
     const prisma = await getServerSidePrismaClient();

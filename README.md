@@ -48,7 +48,9 @@ A simple workout tracking app built with TanStack Start. Users can configure mov
 
 > **Insecure Fallback Session Secret: [SOLVED]** I implemented a security safeguard that prevents the application from starting without a session secret in production or staging environments, mitigating the risk of vulnerabilities caused by default configurations or oversights.
 
-> **Missing Authentication in Movements Endpoints:** Add `.middleware([authMiddleware])` to all functions in `movements.server.ts`.
+> **Missing Authentication System: [SOLVED]** Implemented and integrated `authMiddleware` across all authenticated server functions in the application, ensuring session-based security for all protected operations.
+>
+> **Credential Leak via Public Config: [SOLVED]** Refactored `getServerConfigServerFn` to return only safe environment data, preventing the exposure of `database.url` and `sessionSecret` (cookie signature) to the client. Updated `db.server.ts` to access `configService` directly on the server to maintain secure database access.
 
 > **Scoped Ownership & Data Integrity:** To resolve IDOR vulnerabilities and data duplication, I suggest implementing a scope-based permission system (Global vs. User-owned). Standard movements are flagged as isGlobal and protected from editing or deletion by regular users, while custom exercises include an ownerId, ensuring that a user can never access or remove another's data. This architecture allows the PO to maintain a curated, official library while offering users the flexibility to expand their own database in an isolated and secure manner, utilizing composite Unique Constraints to prevent redundancies within the same scope.
 
