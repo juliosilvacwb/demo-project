@@ -2,20 +2,36 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as db from './db.server';
 import { createMovementServerFn, deleteMovementServerFn, getMovementsServerFn } from './movements.server';
 
+
+vi.mock('@/lib/config.server', () => ({
+  env: {
+    DATABASE_URL: 'postgresql://mock',
+    COOKIE_SECRET: 'mock_secret_for_testing_purposes_only',
+  },
+}));
+
 vi.mock('./db.server', () => ({
   getServerSidePrismaClient: vi.fn(),
 }));
 
-vi.mock('@tanstack/react-start', () => ({
-  createServerFn: vi.fn().mockImplementation(() => ({
-    inputValidator: vi.fn().mockReturnThis(),
-    handler: vi.fn((cb) => {
-      const fn: any = (...args: any[]) => cb(...args);
-      fn.handler = cb;
-      return fn;
+vi.mock("@tanstack/react-start", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-start")>();
+  return {
+    ...actual,
+    createServerFn: vi.fn().mockImplementation((options) => ({
+      inputValidator: vi.fn().mockReturnThis(),
+      handler: vi.fn((cb) => {
+        const fn: any = (...args: any[]) => cb(...args);
+        fn.handler = cb;
+        return fn;
+      }),
+      middleware: vi.fn().mockReturnThis(),
+    })),
+    createMiddleware: vi.fn().mockReturnValue({
+      server: vi.fn().mockReturnThis(),
     }),
-  })),
-}));
+  };
+});
 
 describe('movements.server', () => {
   beforeEach(() => {

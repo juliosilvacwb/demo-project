@@ -126,4 +126,66 @@ test.describe("Workouts", () => {
       await expect(page.locator('p:has-text("No completed workouts yet.")')).toBeVisible();
     });
   });
+
+  test.describe("progression chart", () => {
+    test("should display the progression chart when multiple workouts exist", async ({ page }) => {
+      await page.goto("/movements");
+      const movementName = `Chart Movement ${Date.now()}`;
+      await page.fill('input[placeholder="Movement name (e.g. Bench Press)"]', movementName);
+      await page.click('button:has-text("Add")');
+
+      for (let i = 1; i <= 2; i++) {
+        await page.goto("/current-workout");
+        await page.click('button:has-text("Start Workout")');
+        
+        await page.waitForTimeout(500);
+        await page.selectOption('select', { label: movementName });
+        await page.fill('input[placeholder="Weight"]', (100 + i * 10).toString());
+        await page.fill('input[placeholder="Reps"]', (8 + i).toString());
+        await page.click('button:has-text("Add")');
+
+        await page.click('button:has-text("Complete Workout")');
+      }
+
+      await page.goto("/workout-history");
+      await expect(page.locator('h1:has-text("Workout History")')).toBeVisible();
+      
+      await expect(page.locator('text=Progression Visualizer')).toBeVisible();
+
+      await expect(page.locator('.recharts-surface')).toBeVisible();
+      
+      const maxWeightBtn = page.locator('button[title="Max Weight"]');
+      const totalRepsBtn = page.locator('button[title="Total Reps"]');
+      const totalVolumeBtn = page.locator('button[title="Total Volume"]');
+
+      await expect(maxWeightBtn).toBeVisible();
+      await expect(totalRepsBtn).toBeVisible();
+      await expect(totalVolumeBtn).toBeVisible();
+
+      await expect(page.locator('text=Maximum Weight (lbs)')).toBeVisible();
+
+      await totalRepsBtn.click();
+      await expect(page.locator('text=Total Repetitions')).toBeVisible();
+      await totalVolumeBtn.click();
+      await expect(page.locator('text=Total Volume (Weight * Reps)')).toBeVisible();
+    });
+
+    test("should show empty state when only one workout exists", async ({ page }) => {
+      await page.goto("/movements");
+      const movementName = `Empty Chart ${Date.now()}`;
+      await page.fill('input[placeholder="Movement name (e.g. Bench Press)"]', movementName);
+      await page.click('button:has-text("Add")');
+
+      await page.goto("/current-workout");
+      await page.click('button:has-text("Start Workout")');
+      await page.selectOption('select', { label: movementName });
+      await page.fill('input[placeholder="Weight"]', "100");
+      await page.fill('input[placeholder="Reps"]', "10");
+      await page.click('button:has-text("Add")');
+      await page.click('button:has-text("Complete Workout")');
+
+      await page.goto("/workout-history");
+      await expect(page.locator('text=At least two sessions needed to track progression.')).toBeVisible();
+    });
+  });
 });
